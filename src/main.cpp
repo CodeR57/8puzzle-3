@@ -5,12 +5,22 @@
 
 using namespace std;
 
+//TO DO:
+//* make queueing function
+//* make seach function
+//* figure out how to que all things
+
+//general search function to use with search algorithms
+vector < vector <int> > generalSearch( vector < vector<int> > problem /*queueing function*/ );
+
+//function to check if the matrix matches the goal state
 bool checkIfGoal(vector <vector <int> > M);
 
 int main(){
     vector < vector <int> > matrix;
     vector < vector <int> > goal;
     
+    //make goal matrix to visualize
     goal.push_back(std::vector<int>(3, 1));
     goal.push_back(std::vector<int>(3, 2));
     goal.push_back(std::vector<int>(3, 3));
@@ -26,7 +36,6 @@ int main(){
     goal[2][2]=0;
 
     cout << "Outputting goal matrix: " << endl;
-
     int a,b;
     for(b = 0; b < 3; ++b)
     {
@@ -35,6 +44,7 @@ int main(){
         cout<<endl;
     }
     
+    //make matrix for 8puzzle
     matrix.push_back(std::vector<int>(3, 1));
     matrix.push_back(std::vector<int>(3, 2));
     matrix.push_back(std::vector<int>(3, 3));
@@ -57,7 +67,8 @@ int main(){
             cout << matrix[d][c] << "\t" ;
         cout<<endl;
     }
-
+    
+    //checking if goal matches matrix with function
     cout << "8 Tile matches goal state? " << checkIfGoal(matrix) << endl; 
 
     return 0;
