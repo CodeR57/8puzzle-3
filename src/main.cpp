@@ -6,29 +6,6 @@
 
 using namespace std;
 
-
-    struct Matrix{
-        vector < vector <int> > problem;
-        vector < vector <int> > goal;
-        int fn;
-        int gn;
-        int hn;
-    };
-
-    class Compare_Values    {
-        public: 
-            bool operator()(Matrix& M1, Matrix& M2){
-                if(M1.fn != 0){
-                    if(M1.fn < M2.fn) return true;
-                }
-                else{
-                    if(M1.gn < M2.gn) return true;
-                }
-                return false;
-            }
-    };
-    
-
 //TO DO:
 //* make queueing function
 //* make seach function
@@ -37,7 +14,28 @@ using namespace std;
 //* make functions for operators to move the blank tile
 
 
-//OPERATORS: i and j are values you want to move blank to
+struct Matrix{
+    vector < vector <int> > problem;
+    vector < vector <int> > goal;
+    int fn;
+    int gn;
+    int hn;
+};
+
+class Compare_Values    {
+    public: 
+        bool operator()(Matrix& M1, Matrix& M2){
+            if(M1.fn != 0){
+                if(M1.fn < M2.fn) return true;
+            }
+            else{
+                if(M1.gn < M2.gn) return true;
+            }
+            return false;
+        }
+};
+
+//OPERATORS: i and j are row and column values you want to move blank to
 void UP(Matrix& M, int i, int j){
     int temp = M.problem[i][j];
     M.problem[i][j] = 0;
@@ -66,12 +64,12 @@ void LF(Matrix& M, int i, int j){
     return;
 }
 
-
-//void expand(Matrix& M, 
-
 //function to expand nodes with operators (current node, operators)
 //returns queue of matricies (all possible ways to move the blank)
-
+void expand(Matrix& M, void LF( Matrix&, int, int)){
+    
+    
+} 
 
 //Uniform Cost Search function (nodes(queue), expand)
 //returns a queue in order of g(n)
@@ -90,14 +88,14 @@ void/*Matrix*/ generalSearch( Matrix m /*queueing function*/ );
 bool checkIfGoal(vector < vector<int> >  M);
 
 int main(){
-    
+
     Matrix M;
-    
+
     //make goal matrix to visualize
     M.goal.push_back(std::vector<int>(3, 1));
     M.goal.push_back(std::vector<int>(3, 2));
     M.goal.push_back(std::vector<int>(3, 3));
-    
+
     M.goal[0][0]=1;
     M.goal[0][1]=2;
     M.goal[0][2]=3;
@@ -116,7 +114,7 @@ int main(){
             cout << M.goal[b][a] << "\t" ;
         cout<<endl;
     }
-    
+
     //make matrix for 8puzzle
     M.problem.push_back(std::vector<int>(3, 1));
     M.problem.push_back(std::vector<int>(3, 2));
@@ -131,7 +129,7 @@ int main(){
     M.problem[2][0]=7;
     M.problem[2][1]=8;
     M.problem[2][2]=0;
-   
+
     cout << "Outputting regular matrix: " << endl;
     int c,d;
     for(d = 0; d < 3; ++d)
@@ -150,20 +148,20 @@ int main(){
             cout << M.problem[d][c] << "\t" ;
         cout<<endl;
     }
-    
+
     //checking if goal matches matrix with function
     cout << "8 Tile matches goal state? " << checkIfGoal(M.problem) << endl; 
-    
+
     //generalSearch(M);
-    
+
     /*cout << "Outputting search problem matrix: " << endl;
-    int e,f;
-    for(f = 0; f < 3; ++f)
-    {
-        for(e = 0; e < 3; ++e)
-            cout << M1.problem[f][e] << "\t" ;
-        cout<<endl;
-    }*/
+      int e,f;
+      for(f = 0; f < 3; ++f)
+      {
+      for(e = 0; e < 3; ++e)
+      cout << M1.problem[f][e] << "\t" ;
+      cout<<endl;
+      }*/
 
     return 0;
 }
@@ -176,26 +174,26 @@ bool checkIfGoal(vector <vector<int> > M)
 }
 //void Matrix generalSearch( Matrix& m /*queueing function*/ ){
 /*    priority_queue <Matrix, vector<Matrix>, Compare_Values> nodes;
-    
-    nodes.push(m);
-    if(nodes.empty())
-        return "failure";
-    do{
-        cout << "Nodes is now: " << endl;
-        int e,f;
-        for(f = 0; f < 3; ++f)
-        {
-            for(e = 0; e < 3; ++e)
-                cout << nodes.top().problem[f][e] << "\t" ;
-            cout<<endl;
-        }
 
-        if(nodes.empty()) return failure;
-        
-        
+      nodes.push(m);
+      if(nodes.empty())
+      return "failure";
+      do{
+      cout << "Nodes is now: " << endl;
+      int e,f;
+      for(f = 0; f < 3; ++f)
+      {
+      for(e = 0; e < 3; ++e)
+      cout << nodes.top().problem[f][e] << "\t" ;
+      cout<<endl;
+      }
 
-        //return nodes.top();
-    }while(!nodes.empty);
+      if(nodes.empty()) return failure;
+
+
+
+//return nodes.top();
+}while(!nodes.empty);
 }*/
 
 
