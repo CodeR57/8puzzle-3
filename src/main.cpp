@@ -14,7 +14,6 @@ using namespace std;
 struct Matrix{
     vector < vector <int> > problem;
     vector < vector <int> > goal;
-    int fn;
     int gn;
     int hn;
 };
@@ -22,36 +21,72 @@ struct Matrix{
 class Compare_Values    {
     public: 
         bool operator()(Matrix& M1, Matrix& M2){
-            if(M1.fn != 0){
-                if(M1.fn < M2.fn) return true;
+            if(M1.hn != 0){
+                if(M1.hn < M2.hn) return true;
             }
-            else{
+            else if(M1.hn == 0){
                 if(M1.gn < M2.gn) return true;
             }
             return false;
         }
 };
 
+//A* Mattahatan Search Function
+//calculates the hn value
+void mat(Matrix& M){
+    for(int i = 0; i < 3; i++){
+        for(int j=0; j<3; j++){
+            int val = M.problem[i][j];
+            if(val != 0){
+                int goal_row = (val - 1) / 3;
+                int goal_column = (val - 1) % 3;
+                M.hn = M.hn + abs(i - goal_row) + abs(j - goal_column);
+            }
+        }
+    }
+}
+
+
+//A* Misplaced Tile function
+//calculates the misplaced tile hn value
+void misplaced_tile(Matrix& M){
+    if(M.problem[0][0] != 1) M.hn++;
+    if(M.problem[0][1] != 2) M.hn++;
+    if(M.problem[0][2] != 3) M.hn++;
+    if(M.problem[1][0] != 4) M.hn++;
+    if(M.problem[1][1] != 5) M.hn++;
+    if(M.problem[1][2] != 6) M.hn++;
+    if(M.problem[2][0] != 7) M.hn++;
+    if(M.problem[2][1] != 8) M.hn++;
+    if(M.problem[2][2] != 0) M.hn++;
+}
+
 //OPERATORS: i and j are row and column values you want to move blank to
-Matrix UP(Matrix& M, int i, int j){
+Matrix UP(Matrix& M, int i, int j, int choice){
     swap(M.problem[i][j], M.problem[i+1][j]);
     M.gn= M.gn =1;
+    if(choice == 1)
+        M.hn = 0;
+    if(choice == 2)
+        misplaced_tile(M);
+    if(choice == 3)
+        mat(M);
     return M;
 }
 
-Matrix DN(Matrix& M, int i, int j){
+Matrix DN(Matrix& M, int i, int j, int choice){
     swap(M.problem[i][j],M.problem[i-1][j]);
     M.gn = M.gn+1;
     return M;
 }
 
-Matrix RT(Matrix& M, int i, int j){
+Matrix RT(Matrix& M, int i, int j, int choice){
     swap(M.problem[i][j], M.problem[i][j-1]);
     M.gn = M.gn+1;
     return M;
 }
 
-Matrix LF(Matrix& M, int i, int j){
+Matrix LF(Matrix& M, int i, int j, int choice){
     swap(M.problem[i][j], M.problem[i][j+1]);
     M.gn = M.gn+1;
     return M;
@@ -59,8 +94,7 @@ Matrix LF(Matrix& M, int i, int j){
 
 //function to expand nodes with operators (current node, operators)
 //returns queue of matricies (all possible ways to move the blank)
-vector< Matrix >  expand(Matrix M/*, Matrix& M1, Matrix& M2, Matrix& M3, Matrix& M4*/){
-    vector< Matrix > vec;
+void expand(Matrix M, priority_queue<Matrix, vector<Matrix>, Compare_Values> &nodes, int                choice){
     
     Matrix M1; 
     M1.problem.push_back(std::vector<int>(3, 1));
@@ -106,50 +140,49 @@ vector< Matrix >  expand(Matrix M/*, Matrix& M1, Matrix& M2, Matrix& M3, Matrix&
 
     //for each indicie that the blank is at, swap with the values it can swap with
     if(column == 2 && row == 0){
-        vec.push_back(LF(M1,row, column-1));
-        vec.push_back(DN(M2,row+1,column));
+        nodes.push(LF(M1,row, column-1, choice));
+        nodes.push(DN(M2,row+1,column, choice));
     }
     else if(column == 2 && row == 1){
-        vec.push_back(UP(M1,row-1,column));
-        vec.push_back(LF(M2, row, column-1));
-        vec.push_back(DN(M3, row+1, column));
+        nodes.push(UP(M1,row-1,column, choice));
+        nodes.push(LF(M2, row, column-1, choice));
+        nodes.push(DN(M3, row+1, column, choice));
     }
     else if(column ==2 && row ==2){
-        vec.push_back(UP(M1, row-1, column));
-        vec.push_back(LF(M2, row, column -1));
+        nodes.push(UP(M1, row-1, column, choice));
+        nodes.push(LF(M2, row, column -1,choice));
     }
     else if(column == 0 && row == 0){
-        vec.push_back(RT(M1,row, column+1));
-        vec.push_back(DN(M2,row+1,column));
+        nodes.push(RT(M1,row, column+1,choice));
+        nodes.push(DN(M2,row+1,column, choice));
     }
     else if(column == 0 && row == 1){
-        vec.push_back(UP(M1,row-1,column));
-        vec.push_back(RT(M2, row, column+1));
-        vec.push_back(DN(M3, row+1, column));
+        nodes.push(UP(M1,row-1,column,choice));
+        nodes.push(RT(M2, row, column+1, choice));
+        nodes.push(DN(M3, row+1, column, choice));
     }
     else if(column ==0 && row ==2){
-        vec.push_back(UP(M1, row-1, column));
-        vec.push_back(RT(M2, row, column+1));
+        nodes.push(UP(M1, row-1, column, choice));
+        nodes.push(RT(M2, row, column+1, choice));
     }
     else if(column == 1 && row == 0){
-        vec.push_back(LF(M1,row, column-1));
-        vec.push_back(DN(M2,row+1,column));
-        vec.push_back(RT(M3, row, column+1));
+        nodes.push(LF(M1,row, column-1, choice));
+        nodes.push(DN(M2,row+1,column, choice));
+        nodes.push(RT(M3, row, column+1, choice));
     }
     else if(column == 1 && row == 1){
-        vec.push_back(UP(M1,row-1,column));
-        vec.push_back(LF(M2, row, column-1));
-        vec.push_back(DN(M3, row+1, column));
-        vec.push_back(RT(M4, row, column+1));
+        nodes.push(UP(M1,row-1,column, choice));
+        nodes.push(LF(M2, row, column-1, choice));
+        nodes.push(DN(M3, row+1, column, choice));
+        nodes.push(RT(M4, row, column+1, choice));
     }
     else if(column ==1 && row ==2){
-        vec.push_back(UP(M1, row-1, column));
-        vec.push_back(LF(M2, row, column -1));
-        vec.push_back(RT(M3, row, column + 1));
+        nodes.push(UP(M1, row-1, column, choice));
+        nodes.push(LF(M2, row, column -1, choice));
+        nodes.push(RT(M3, row, column + 1, choice));
     }
 
     //return the vector queue
-    return vec;
 } 
 
 //Uniform Cost Search function (nodes(queue), expand)
@@ -161,16 +194,54 @@ priority_queue<Matrix, vector<Matrix>, Compare_Values> UC(priority_queue <Matrix
     return pq;
 }
 
-
-//A* Mattahatan Search Function
-//returns a queue in order of f(n) = g(n) + f(n)
-
-//A* Misplaced Tile function
-//returns a queue in order of f(n) = g(n) + f(n)
-
 //general search function to use with search algorithms
-Matrix generalSearch(Matrix M, priority_queue<Matrix, vector<Matrix>, Compare_Values> queueing(priority_queue <Matrix, vector<Matrix>, Compare_Values>),
-                         vector<Matrix> expand( Matrix ));
+void generalSearch(Matrix M, int choice)
+    if(choice == 1)
+        M.hn = 0;
+    else if(choice == 2)
+        misplaced_tile(M);
+    else if(choice == 3)
+        M.hn = mat(M);
+    priority_queue <Matrix, vector<Matrix>, Compare_Values> nodes;
+    nodes.push(M);
+    do{    
+        if(nodes.empty()){
+            cout <<  "Failure. There is no solution to this problem." << endl;
+            break;
+        }
+        Matrix node;
+        node.problem.push_back(std::vector<int>(3, 1));
+        node.problem.push_back(std::vector<int>(3, 2));
+        node.problem.push_back(std::vector<int>(3, 3));
+        
+        node.goal.push_back(std::vector<int>(3, 1));
+        node.goal.push_back(std::vector<int>(3, 2));
+        node.goal.push_back(std::vector<int>(3, 3));
+
+        node = nodes.top();
+         
+        cout << "Nodes is now: " << endl;
+        int e,f;
+        for(f = 0; f < 3; ++f){
+            for(e = 0; e < 3; ++e)
+                cout << nodes.top().problem[f][e] << "\t" ;
+            cout<<endl;
+        }
+        if(checkIfGoal(node.problem)){
+            for(int f = 0; f < 3; ++f)
+            {
+                for(int e = 0; e < 3; ++e)
+                    cout << node.problem[f][e] << "\t" ;
+                cout<<endl;
+            }
+            cout << endl;
+        }
+            
+        nodes = expand(M,nodes,choice);
+    }while(!nodes.empty());
+    return;
+
+}
 
 //function to check if the matrix matches the goal state
 bool checkIfGoal(vector < vector<int> >  M);
@@ -182,28 +253,6 @@ int main(){
     M.goal.push_back(std::vector<int>(3, 1));
     M.goal.push_back(std::vector<int>(3, 2));
     M.goal.push_back(std::vector<int>(3, 3));
-
-    //These are the copy matrices used in expand function
-    /*Matrix M1; 
-    M1.problem.push_back(std::vector<int>(3, 1));
-    M1.problem.push_back(std::vector<int>(3, 2));
-    M1.problem.push_back(std::vector<int>(3, 3));
-
-    Matrix M2;
-    M2.problem.push_back(std::vector<int>(3, 1));
-    M2.problem.push_back(std::vector<int>(3, 2));
-    M2.problem.push_back(std::vector<int>(3, 3));
-
-    Matrix M3;
-    M3.problem.push_back(std::vector<int>(3, 1));
-    M3.problem.push_back(std::vector<int>(3, 2));
-    M3.problem.push_back(std::vector<int>(3, 3));
-
-    Matrix M4;
-    M4.problem.push_back(std::vector<int>(3, 1));
-    M4.problem.push_back(std::vector<int>(3, 2));
-    M4.problem.push_back(std::vector<int>(3, 3));
-    */
 
     //create M's goal state
     M.goal[0][0]=1;
@@ -267,7 +316,7 @@ int main(){
         cout << endl;
     }
     //checking if goal matches matrix with function
-    cout << "8 Tile matches goal state? " << checkIfGoal(M.problem) << endl; 
+    //cout << "8 Tile matches goal state? " << checkIfGoal(M.problem) << endl; 
     
     Matrix UCS;
     
@@ -296,39 +345,4 @@ bool checkIfGoal(vector <vector<int> > M)
         return true;
     return false;
 }
-
-Matrix generalSearch(Matrix M, priority_queue<Matrix, vector<Matrix>, Compare_Values> queueing(priority_queue <Matrix, vector<Matrix>, Compare_Values>),
-                         vector<Matrix> expand( Matrix )){
-    priority_queue <Matrix, vector<Matrix>, Compare_Values> nodes;
-    nodes.push(M);
-    do{    
-        if(nodes.empty()){
-            cout <<  "Failure. There is no solution to this problem." << endl;
-            break;
-        }
-        Matrix node;
-        node.problem.push_back(std::vector<int>(3, 1));
-        node.problem.push_back(std::vector<int>(3, 2));
-        node.problem.push_back(std::vector<int>(3, 3));
-        
-        node.goal.push_back(std::vector<int>(3, 1));
-        node.goal.push_back(std::vector<int>(3, 2));
-        node.goal.push_back(std::vector<int>(3, 3));
-
-        node = nodes.top();
-         
-        cout << "Nodes is now: " << endl;
-        int e,f;
-        for(f = 0; f < 3; ++f){
-            for(e = 0; e < 3; ++e)
-                cout << nodes.top().problem[f][e] << "\t" ;
-            cout<<endl;
-        }
-        if(checkIfGoal(node.problem))
-            return nodes.top();
-        nodes = queueing(nodes, expand(node));
-    }while(!nodes.empty());
-
-}
-
 
