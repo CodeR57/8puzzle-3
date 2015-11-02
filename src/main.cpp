@@ -2,7 +2,7 @@
 #include <vector>
 #include<queue>
 #include <math.h>
-//#include <algoritm.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -21,19 +21,14 @@ struct Matrix{
 class Compare_Values    {
     public: 
         bool operator()(Matrix& M1, Matrix& M2){
-            if(M1.hn != 0){
-                if(M1.hn < M2.hn) return true;
-            }
-            else if(M1.hn == 0){
-                if(M1.gn < M2.gn) return true;
-            }
-            return false;
+                return(M1.hn + M1.gn > M2.hn + M2.gn);
         }
 };
 
 //A* Mattahatan Search Function
 //calculates the hn value
 void mat(Matrix& M){
+    M.hn = 0;
     for(int i = 0; i < 3; i++){
         for(int j=0; j<3; j++){
             int val = M.problem[i][j];
@@ -50,6 +45,7 @@ void mat(Matrix& M){
 //A* Misplaced Tile function
 //calculates the misplaced tile hn value
 void misplaced_tile(Matrix& M){
+    M.hn = 0;
     if(M.problem[0][0] != 1) M.hn++;
     if(M.problem[0][1] != 2) M.hn++;
     if(M.problem[0][2] != 3) M.hn++;
@@ -64,7 +60,7 @@ void misplaced_tile(Matrix& M){
 //OPERATORS: i and j are row and column values you want to move blank to
 Matrix UP(Matrix& M, int i, int j, int choice){
     swap(M.problem[i][j], M.problem[i+1][j]);
-    M.gn= M.gn =1;
+    M.gn= M.gn + 1;
     if(choice == 1)
         M.hn = 0;
     if(choice == 2)
@@ -77,24 +73,45 @@ Matrix UP(Matrix& M, int i, int j, int choice){
 Matrix DN(Matrix& M, int i, int j, int choice){
     swap(M.problem[i][j],M.problem[i-1][j]);
     M.gn = M.gn+1;
+    if(choice == 1)
+       M.hn = 0;
+    if(choice == 2)
+        misplaced_tile(M);
+    if(choice == 3)
+        mat(M);
+    
     return M;
 }
 
 Matrix RT(Matrix& M, int i, int j, int choice){
     swap(M.problem[i][j], M.problem[i][j-1]);
     M.gn = M.gn+1;
+    if(choice == 1)
+        M.hn = 0;
+    if(choice == 2)
+        misplaced_tile(M);
+    if(choice == 3)
+        mat(M);
+    
     return M;
 }
 
 Matrix LF(Matrix& M, int i, int j, int choice){
     swap(M.problem[i][j], M.problem[i][j+1]);
     M.gn = M.gn+1;
+    if(choice == 1)
+        M.hn = 0;
+    if(choice == 2)
+        misplaced_tile(M);
+    if(choice == 3)
+        mat(M);
+    
     return M;
 }
 
 //function to expand nodes with operators (current node, operators)
 //returns queue of matricies (all possible ways to move the blank)
-void expand(Matrix M, priority_queue<Matrix, vector<Matrix>, Compare_Values> &nodes, int                choice){
+void expand(Matrix M, priority_queue<Matrix, vector<Matrix>, Compare_Values> &nodes, int choice){
     
     Matrix M1; 
     M1.problem.push_back(std::vector<int>(3, 1));
@@ -194,16 +211,29 @@ priority_queue<Matrix, vector<Matrix>, Compare_Values> UC(priority_queue <Matrix
     return pq;
 }
 
+//function to check if the matrix matches the goal state
+bool checkIfGoal(vector < vector<int> >  M);
+
 //general search function to use with search algorithms
-void generalSearch(Matrix M, int choice)
+void generalSearch(Matrix M, int choice){
     if(choice == 1)
         M.hn = 0;
     else if(choice == 2)
         misplaced_tile(M);
     else if(choice == 3)
-        M.hn = mat(M);
+        mat(M);
     priority_queue <Matrix, vector<Matrix>, Compare_Values> nodes;
     nodes.push(M);
+    
+    cout << "Expanding state:" << endl;
+        int e,f;
+        for(f = 0; f < 3; ++f){
+            for(e = 0; e < 3; ++e)
+                cout << nodes.top().problem[f][e] << "\t" ;
+            cout<<endl;
+        }
+   int max_queue=0;
+   int notEmpty = 0; 
     do{    
         if(nodes.empty()){
             cout <<  "Failure. There is no solution to this problem." << endl;
@@ -217,17 +247,19 @@ void generalSearch(Matrix M, int choice)
         node.goal.push_back(std::vector<int>(3, 1));
         node.goal.push_back(std::vector<int>(3, 2));
         node.goal.push_back(std::vector<int>(3, 3));
-
+        
         node = nodes.top();
-         
-        cout << "Nodes is now: " << endl;
+        nodes.pop(); 
+        /*cout << "Here is what we are expanding:" << endl;
         int e,f;
         for(f = 0; f < 3; ++f){
             for(e = 0; e < 3; ++e)
                 cout << nodes.top().problem[f][e] << "\t" ;
             cout<<endl;
         }
+        */
         if(checkIfGoal(node.problem)){
+            cout << "Goal node reached!" << endl;
             for(int f = 0; f < 3; ++f)
             {
                 for(int e = 0; e < 3; ++e)
@@ -235,16 +267,30 @@ void generalSearch(Matrix M, int choice)
                 cout<<endl;
             }
             cout << endl;
+            cout << "To solve this problem, the algorithm expanded a total of _____ nodes." << endl;
+            cout << "The maximum number of nodes in the queue at any one time was " << max_queue << "." << endl;
+            cout << "Depth of goal node was " << node.gn << "." << endl;
+            notEmpty = 1;
+            return;
         }
-            
-        nodes = expand(M,nodes,choice);
-    }while(!nodes.empty());
+        
+        expand(node,nodes,choice);
+        cout << "Size of queue is " << nodes.size() << "." << endl;
+        int curr_queue = nodes.size();
+        max_queue = max(max_queue, curr_queue);
+
+        cout << "The best state to expand with a g(n)=" << nodes.top().gn << " and h(n)=" << nodes.top().hn << "is..." << endl;
+        for(int f = 0; f < 3; ++f){
+            for(int e = 0; e < 3; ++e)
+                cout << nodes.top().problem[f][e] << "\t" ;
+            cout<<endl;
+        }
+        cout << endl;
+
+    }while(!nodes.empty() && !notEmpty);
     return;
 
 }
-
-//function to check if the matrix matches the goal state
-bool checkIfGoal(vector < vector<int> >  M);
 
 int main(){
 
@@ -280,14 +326,14 @@ int main(){
     M.problem.push_back(std::vector<int>(3, 3));
 
     M.problem[0][0]=1;
-    M.problem[0][1]=3;
-    M.problem[0][2]=2;
+    M.problem[0][1]=2;
+    M.problem[0][2]=3;
     M.problem[1][0]=4;
-    M.problem[1][1]=0;
-    M.problem[1][2]=6;
+    M.problem[1][1]=8;
+    M.problem[1][2]=0;
     M.problem[2][0]=7;
-    M.problem[2][1]=5;
-    M.problem[2][2]=8;
+    M.problem[2][1]=6;
+    M.problem[2][2]=5;
 
     cout << "Outputting regular matrix: " << endl;
     int c,d;
@@ -299,11 +345,11 @@ int main(){
     }
 
     //queue of all the possible expansions of M
-    vector<Matrix> vec = expand(M/*, M1, M2, M3, M4*/);
+    //vector<Matrix> vec = expand(M/*, M1, M2, M3, M4*/);
     
     //cout << "Outputting gn values: " << M1.gn << ", " << M2.gn << ", " << M3.gn << ", " << M4.gn << endl;
 
-    cout << "Outputting the queue: " << endl;
+    /*cout << "Outputting the queue: " << endl;
     int i,e,f;
     for(i = 0; i < vec.size(); i++)
     {
@@ -315,27 +361,38 @@ int main(){
         }
         cout << endl;
     }
+    */
     //checking if goal matches matrix with function
     //cout << "8 Tile matches goal state? " << checkIfGoal(M.problem) << endl; 
     
-    Matrix UCS;
+    //Matrix UCS;
     
-    UCS.problem.push_back(std::vector<int>(3, 1));
-    UCS.problem.push_back(std::vector<int>(3, 2));
-    UCS.problem.push_back(std::vector<int>(3, 3));
+    //UCS.problem.push_back(std::vector<int>(3, 1));
+    //UCS.problem.push_back(std::vector<int>(3, 2));
+    //UCS.problem.push_back(std::vector<int>(3, 3));
     
-    UCS.goal.push_back(std::vector<int>(3, 1));
-    UCS.goal.push_back(std::vector<int>(3, 2));
-    UCS.goal.push_back(std::vector<int>(3, 3));
+    //UCS.goal.push_back(std::vector<int>(3, 1));
+    //UCS.goal.push_back(std::vector<int>(3, 2));
+    //UCS.goal.push_back(std::vector<int>(3, 3));
     
-    priority_queue<Matrix, vector<Matrix>, Compare_Values> pq;
+    //priority_queue<Matrix, vector<Matrix>, Compare_Values> pq;
+    
 
-    UCS = generalSearch(M, UC, expand);
+    //UCS = generalSearch(M, UC, expand);
     //search.problem  = generalSearch(M).problem;
     //search.goal = M.goal;
     //search.fn = generalSearch(M).fn;
-
-
+    
+    int choice = 0;
+    cout << "Enter your choice of algorithm:" << endl;
+    cout << "1, Uniform Cost Search" << endl;
+    cout << "2. A* with the Misplaced Tile Heuristic" << endl;
+    cout << "3. A* eith the Manhattan Distance Heuristic" << endl;
+    cin >> choice;
+    cout << endl;
+    
+    generalSearch(M, choice);
+    
     return 0;
 }
 
