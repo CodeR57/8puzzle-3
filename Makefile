@@ -8,7 +8,7 @@ bin:
 	[ ! -d $bin ] && mkdir bin
 
 8puzzle: bin
-	$(comp) ./src/main.cpp -o ./bin/8puzzle
+	$(comp) ./src/8puzzle.cpp -o ./bin/8puzzle
 
 clean:
 	rm -rf bin
