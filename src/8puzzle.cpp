@@ -344,10 +344,10 @@ int main(){
         M.problem[0][1]=2;
         M.problem[0][2]=3;
         M.problem[1][0]=4;
-        M.problem[1][1]=5;
+        M.problem[1][1]=0;
         M.problem[1][2]=6;
         M.problem[2][0]=7;
-        M.problem[2][1]=0;
+        M.problem[2][1]=5;
         M.problem[2][2]=8;
     }
     else if(problem == 2){
@@ -377,7 +377,7 @@ int main(){
     cout << "\tEnter your choice of algorithm:" << endl;
     cout << "\t1. Uniform Cost Search" << endl;
     cout << "\t2. A* with the Misplaced Tile Heuristic" << endl;
-    cout << "\t3. A* eith the Manhattan Distance Heuristic" << endl;
+    cout << "\t3. A* with the Manhattan Distance Heuristic" << endl << "\t";
     cin >> choice;
     cout << endl;
     
@@ -399,4 +399,3 @@ bool checkIfGoal(vector <vector<int> > M)
         return true;
     return false;
 }
-
