@@ -237,6 +237,7 @@ void generalSearch(Matrix M, int choice){
 
     cout << "Expanding state: " << endl;
     for(int i = 0; i < 3; ++i){
+        cout << "\t";
         for(int j = 0; j < 3; ++j)
             cout << nodes.top().problem[i][j] << "\t" ;
         cout<<endl;
@@ -292,14 +293,13 @@ void generalSearch(Matrix M, int choice){
         //expand the state that is in the top of the queue
         cout << "The best state to expand with a g(n)=" << nodes.top().gn << " and h(n)=" << nodes.top().hn << " is..." << endl;
         for(int f = 0; f < 3; ++f){
+            cout << "\t";
             for(int e = 0; e < 3; ++e)
                 cout << nodes.top().problem[f][e] << "\t" ;
-            cout<<endl;
+            cout <<  endl;
         }
+        cout << "\t\t\t\tExpanding this state..." << endl;
         cout << endl;
-
-
-
     }while(!nodes.empty() && !notEmpty);
     return;
 
@@ -344,11 +344,11 @@ int main(){
         M.problem[0][1]=2;
         M.problem[0][2]=3;
         M.problem[1][0]=4;
-        M.problem[1][1]=0;
-        M.problem[1][2]=6;
+        M.problem[1][1]=8;
+        M.problem[1][2]=0;
         M.problem[2][0]=7;
-        M.problem[2][1]=5;
-        M.problem[2][2]=8;
+        M.problem[2][1]=6;
+        M.problem[2][2]=5;
     }
     else if(problem == 2){
         int one, two, three, four, five, six, seven, eight, nine;
